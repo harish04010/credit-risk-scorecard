@@ -1,5 +1,9 @@
 # Credit Risk Scorecard
 
+**Live demo:** https://credit-risk-scorecard.vercel.app (score an account, see the points add up, and explore validation, stress tests and segments)
+
+![Scorecard calculator](docs/site.png)
+
 A behavioral credit scorecard for a credit card book, built the way a bank's risk team builds one: data quality checks, monotonic weight-of-evidence binning, a points-based logistic scorecard, validation, an independent re-implementation in R, fairness testing, roll-rate loss forecasting in SQL, a Basel-style stress test, and customer segmentation. The data is 30,000 real accounts.
 
 ![Score separation](docs/separation.png)

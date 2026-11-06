@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Credit risk scorecard: try it</title>
+<meta name="description" content="A behavioral credit scorecard on 30,000 real card accounts: score an account, see the points add up, and see how the model was validated and stress-tested.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f4f5f7;--surface:#fff;--ink:#14213d;--soft:#5a6478;--rule:#dbe0e8;--navy:#14213d;--gold:#b08d2f;--good:#2f7a54;--bad:#b0343a;--mid:#c4882a;
+color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--paper:#0d1320;--surface:#151d2e;--ink:#e6eaf2;--soft:#9aa5b8;--rule:#27324a;--navy:#0a1020;--gold:#d8b45a;--good:#5fbf8c;--bad:#ea7b80;--mid:#e3a650;color-scheme:dark}}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 "Libre Franklin","Helvetica Neue",Arial,sans-serif}
+main{max-width:1120px;margin:0 auto;padding:0 clamp(16px,3vw,36px) 64px}
+.hero{background:#14213d;color:#eef1f6;margin:0 calc(-1*clamp(16px,3vw,36px));padding:44px clamp(16px,3vw,36px) 36px}
+.hero .wrap{max-width:1120px;margin:0 auto}
+.eyebrow{font-weight:600;color:#d8b45a;letter-spacing:.06em;text-transform:uppercase;font-size:.8rem;margin:0 0 10px}
+h1{font-size:clamp(2rem,4.6vw,3rem);line-height:1.05;margin:0 0 12px;letter-spacing:-.01em}
+.hero p{max-width:66ch;color:#c5cddb;margin:0;font-size:1.08rem}
+.metrics{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:24px}
+.metrics div{font-size:.85rem;color:#aab4c6}.metrics b{display:block;font:700 1.45rem "JetBrains Mono",ui-monospace,monospace;color:#fff}
+h2{font-size:1.45rem;margin:0 0 8px}
+.soft{color:var(--soft)}
+section{margin-top:48px}
+.calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.95fr);gap:24px;margin-top:-1px}
+@media (max-width:880px){.calc{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:20px}
+.field{margin-bottom:18px}
+.field label{display:flex;justify-content:space-between;gap:12px;font-weight:600}
+.field output{font-family:"JetBrains Mono",ui-monospace,monospace;font-weight:500;color:var(--soft)}
+.field input{width:100%;accent-color:var(--navy)}
+.field small{color:var(--soft)}
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.presets button{font:inherit;font-size:.9rem;padding:6px 12px;border-radius:999px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);cursor:pointer}
+.presets button:hover{border-color:var(--ink)}
+.slip{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.92rem}
+.slip .line{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 0;border-bottom:1px dashed var(--rule)}
+.slip .line span:first-child{font-family:"Libre Franklin",sans-serif}
+.slip .line em{display:block;font-style:normal;color:var(--soft);font-size:.8rem;font-family:"Libre Franklin",sans-serif}
+.slip .total{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;font-weight:700}
+.slip .total b{font-size:2.6rem;line-height:1}
+.gauge{height:12px;border-radius:6px;background:linear-gradient(90deg,var(--bad),var(--mid) 50%,var(--good));position:relative;margin:18px 0 6px}
+.gauge i{position:absolute;top:-6px;width:4px;height:24px;background:var(--ink);border-radius:2px;transition:left .2s}
+.gauge u{position:absolute;top:-4px;width:2px;height:20px;background:var(--surface);opacity:.9}
+.scale{display:flex;justify-content:space-between;font-size:.78rem;color:var(--soft);font-family:"JetBrains Mono",monospace}
+.verdict{margin-top:16px;padding:12px 14px;border-radius:8px;font-weight:600}
+.verdict.yes{background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good)}
+.verdict.no{background:color-mix(in srgb,var(--bad) 12%,transparent);color:var(--bad)}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.kv div{background:var(--paper);border-radius:8px;padding:10px 12px}.kv b{display:block;font:700 1.2rem "JetBrains Mono",monospace}
+.callout{border-left:5px solid var(--gold);background:var(--surface);border-radius:0 10px 10px 0;padding:18px 20px}
+.big2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}
+@media (max-width:640px){.big2{grid-template-columns:1fr}}
+.big2 div b{display:block;font:700 1.8rem "JetBrains Mono",monospace}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:880px){.grid2{grid-template-columns:1fr}}
+svg{width:100%;height:auto;display:block}
+.axis{fill:var(--soft);font-size:11px;font-family:inherit}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+thead th{font-size:.82rem;color:var(--soft);font-weight:600}
+.num{text-align:right;white-space:nowrap}
+.ok{color:var(--good);font-weight:700}
+.segs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.segs .card b{font:700 1.5rem "JetBrains Mono",monospace;display:block}
+.scroll{overflow-x:auto}
+details{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:10px 14px;margin-bottom:8px}
+summary{cursor:pointer;font-weight:600}
+.foot{margin-top:56px;padding-top:14px;border-top:1px solid var(--rule);font-size:.9rem;color:var(--soft)}
+</style>
+</head>
+<body>
+<main>
+<header class="hero"><div class="wrap">
+  <p class="eyebrow">Credit risk · behavioral scorecard</p>
+  <h1>Score a credit card account.</h1>
+  <p>A points-based scorecard built on 30,000 real accounts, the way banks build them: weight of evidence, logistic regression, points scaling, and independent validation in R. Move the sliders and watch the points add up.</p>
+  <div class="metrics" id="metrics"></div>
+</div></header>
+
+<section class="calc">
+  <div class="card">
+    <h2>The account</h2>
+    <div class="presets" id="presets"></div>
+    <div id="fields"></div>
+  </div>
+  <div class="card slip">
+    <h2 style="font-family:'Libre Franklin',sans-serif">Score</h2>
+    <div id="lines"></div>
+    <div class="total"><span>Total</span><b id="score"></b></div>
+    <div class="gauge" id="gauge"></div>
+    <div class="scale" id="scale"></div>
+    <div class="kv" id="kv"></div>
+    <div class="verdict" id="verdict"></div>
+  </div>
+</section>
+
+<section class="callout">
+  <h2>"Default" in this data isn't a loss</h2>
+  <p class="soft" style="margin:0">The dataset's default flag means a missed payment next month. Most missed payments get caught up. Following accounts through roll rates (current → 30 days late → 60 → charge-off), only <b id="corate"></b> of missed payments become losses within 12 months. Treating the flag as a loss would overstate expected losses by about <b id="overstate"></b>.</p>
+  <div class="big2" id="lossbasis"></div>
+</section>
+
+<section class="grid2">
+  <div class="card"><h2>Does the score rank risk?</h2><p class="soft" style="margin:0 0 6px">Holdout accounts in ten score bands, riskiest on the left. Bars are actual default rates; dots are the model's predictions.</p><svg id="deciles" viewBox="0 0 520 250"></svg></div>
+  <div class="card"><h2>Rebuilt independently in R</h2><p class="soft" style="margin:0 0 10px">A separate R script refits the model from the same bins. The first run caught two bugs in the Python version.</p><table id="rcheck"></table></div>
+</section>
+
+<section><h2>Stress test</h2><p class="soft">Expected loss under Basel-style scenarios: default probabilities shift up, recoveries fall (LGD), and customers draw more of their lines (CCF).</p>
+<div class="card"><svg id="stress" viewBox="0 0 900 200"></svg></div></section>
+
+<section><h2>Who's in the book</h2><p class="soft">K-means on behavior (k = 3, chosen by silhouette score).</p><div class="segs" id="segs"></div></section>
+
+<section class="grid2">
+  <div><h2>Fair lending check</h2><p class="soft" id="fair"></p>
+  <h2 style="margin-top:28px">Explainability over accuracy</h2><p class="soft" id="challenger"></p></div>
+  <div><h2>What the data quality review found</h2><div id="quality"></div></div>
+</section>
+
+<footer class="foot">Data: "Default of credit card clients" (Taiwan, 2005), UCI Machine Learning Repository, CC BY 4.0. Amounts are New Taiwan dollars. The full method, the model documentation, and the R validation are in the repository.</footer>
+</main>
+<script type="module">
+const d = await fetch("data.json").then(r => r.json());
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pct = (v, dp = 1) => (v * 100).toFixed(dp) + "%";
+const nt = v => "NT$" + (v / 1e6).toFixed(1) + "M";
+const m = d.metrics;
+document.getElementById("metrics").innerHTML = [["AUC", m.auc.toFixed(3)], ["Gini", m.gini.toFixed(2)], ["KS", m.ks.toFixed(2)], ["Calibration (HL p)", m.hl_p.toFixed(2)], ["Stability (PSI)", m.psi.toFixed(4)]]
+  .map(([k, v]) => `<div><b>${v}</b>${k}</div>`).join("") + `<div style="align-self:end">on ${m.holdout.toLocaleString()} held-out accounts</div>`;
+
+// Bins come as labels like "<= 0", "0 to 1", "> 4". Turn them into upper edges.
+const edges = bins => bins.map(b => {
+  const t = b.bin.trim();
+  if (t.startsWith("<=")) return { hi: +t.slice(2) };
+  if (t.startsWith(">")) return { hi: Infinity };
+  const [, hi] = t.split(" to "); return { hi: +hi };
+});
+const binFor = (feature, v) => { const b = d.card[feature], e = edges(b); const i = e.findIndex(x => v <= x.hi); return b[i < 0 ? b.length - 1 : i]; };
+
+const fields = [
+  { key: "months_delinquent_6m", label: "Months behind on payments, last 6", min: 0, max: 6, step: 1, value: 0, fmt: v => `${v} of 6`, help: "Counted from the monthly repayment status." },
+  { key: "payment_ratio", label: "Payments as a share of the bill", min: 0, max: 1.5, step: 0.01, value: 0.2, fmt: v => pct(v, 0), help: "Last five months. Over 100% means paying down the balance." },
+  { key: "limit", label: "Credit limit", min: 10000, max: 800000, step: 10000, value: 150000, fmt: v => "NT$" + v.toLocaleString(), help: "Higher limits go to customers the bank already trusts." },
+  { key: "avg_utilization_6m", label: "Average utilization, last 6 months", min: 0, max: 1.5, step: 0.01, value: 0.45, fmt: v => pct(v, 0), help: "Balance divided by limit." },
+];
+const presets = {
+  "Pays in full": { months_delinquent_6m: 0, payment_ratio: 1.1, limit: 300000, avg_utilization_6m: 0.08 },
+  "Steady revolver": { months_delinquent_6m: 0, payment_ratio: 0.08, limit: 140000, avg_utilization_6m: 0.6 },
+  "Falling behind": { months_delinquent_6m: 4, payment_ratio: 0, limit: 50000, avg_utilization_6m: 0.95 },
+};
+// Bin labels carry full precision ("0.0368255 to 0.181922"); show them rounded.
+const tidy = (feature, label) => label.replace(/-?\d+(\.\d+)?/g, n => {
+  const v = +n;
+  if (feature === "limit") return "NT$" + Math.round(v).toLocaleString();
+  if (feature === "months_delinquent_6m") return String(v);
+  return Math.round(v * 100) + "%";
+});
+const names = { months_delinquent_6m: "Months behind", payment_ratio: "Payment ratio", limit: "Credit limit", avg_utilization_6m: "Utilization" };
+const val = Object.fromEntries(fields.map(f => [f.key, f.value]));
+document.getElementById("fields").innerHTML = fields.map(f => `<div class="field"><label for="f-${f.key}"><span>${f.label}</span><output id="o-${f.key}"></output></label>
+  <input id="f-${f.key}" type="range" min="${f.min}" max="${f.max}" step="${f.step}" value="${f.value}"><small>${f.help}</small></div>`).join("");
+fields.forEach(f => document.getElementById(`f-${f.key}`).oninput = e => { val[f.key] = +e.target.value; render(); });
+document.getElementById("presets").innerHTML = Object.keys(presets).map(n => `<button data-n="${n}">${n}</button>`).join("");
+document.querySelectorAll("#presets button").forEach(b => b.onclick = () => { Object.assign(val, presets[b.dataset.n]); fields.forEach(f => document.getElementById(`f-${f.key}`).value = val[f.key]); render(); });
+
+const S = d.scaling, lo = 458, hi = 557;
+const pd = score => { const odds = S.base_odds * 2 ** ((score - S.base_score) / S.pdo); return 1 / (1 + odds); };
+function render() {
+  let total = 0;
+  document.getElementById("lines").innerHTML = fields.map(f => {
+    document.getElementById(`o-${f.key}`).textContent = f.fmt(val[f.key]);
+    const b = binFor(f.key, val[f.key]); total += b.points;
+    return `<div class="line"><span>${names[f.key]}<em>bin ${esc(tidy(f.key, b.bin))} · ${pct(b.default_rate)} of these defaulted</em></span><span>+${b.points}</span></div>`;
+  }).join("");
+  document.getElementById("score").textContent = total;
+  const at = v => ((v - lo) / (hi - lo) * 100).toFixed(1) + "%";
+  document.getElementById("gauge").innerHTML = `<u style="left:${at(d.cutoff)}" title="cutoff ${d.cutoff}"></u><i style="left:calc(${at(total)} - 2px)"></i>`;
+  document.getElementById("scale").innerHTML = `<span>${lo} riskier</span><span>cutoff ${d.cutoff}</span><span>safer ${hi}</span>`;
+  const p = pd(total), odds = (1 - p) / p;
+  const band = d.deciles.find(x => total >= x.min_score && total <= x.max_score) || (total < d.deciles[0].min_score ? d.deciles[0] : d.deciles[d.deciles.length - 1]);
+  document.getElementById("kv").innerHTML = `<div><span class="soft">Chance of missing a payment</span><b>${pct(p)}</b></div><div><span class="soft">Odds good : bad</span><b>${odds.toFixed(1)} : 1</b></div>
+    <div><span class="soft">Score band (holdout)</span><b>${band.decile} of 10</b></div><div><span class="soft">Actual rate in that band</span><b>${pct(band.default_rate)}</b></div>`;
+  const ok = total >= d.cutoff, v = document.getElementById("verdict");
+  v.className = "verdict " + (ok ? "yes" : "no");
+  v.textContent = ok ? `Eligible for a credit line increase (score ${total} ≥ ${d.cutoff})` : `Not eligible for a line increase (needs ${d.cutoff}, ${d.cutoff - total} points short)`;
+}
+render();
+
+const L = d.loss_basis;
+document.getElementById("corate").textContent = pct(L.charge_off_rate);
+document.getElementById("overstate").textContent = Math.round(L.missed_payment / L.charge_off) + "×";
+document.getElementById("lossbasis").innerHTML = `<div><span class="soft">Expected loss if "default" were a loss</span><b>${nt(L.missed_payment)}</b></div><div><span class="soft">Expected loss using charge-off rates</span><b>${nt(L.charge_off)}</b></div>`;
+
+(() => { const W = 520, H = 250, Lp = 40, R = 8, T = 10, B = 30, n = d.deciles.length, bw = (W - Lp - R) / n * .66;
+  const x = i => Lp + (W - Lp - R) * (i + .5) / n, y = v => T + (H - T - B) * (1 - v / .7);
+  let o = [0, .2, .4, .6].map(v => `<line x1="${Lp}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--rule)"/><text class="axis" x="${Lp - 6}" y="${y(v) + 4}" text-anchor="end">${v * 100}%</text>`).join("");
+  d.deciles.forEach((q, i) => { o += `<rect x="${x(i) - bw / 2}" y="${y(q.default_rate)}" width="${bw}" height="${H - B - y(q.default_rate)}" fill="var(--navy)" opacity=".85"><title>scores ${q.min_score}-${q.max_score}: ${pct(q.default_rate)} actual</title></rect>
+    <circle cx="${x(i)}" cy="${y(q.predicted)}" r="4.5" fill="var(--gold)" stroke="var(--surface)" stroke-width="1.5"/><text class="axis" x="${x(i)}" y="${H - 10}" text-anchor="middle">${q.min_score}</text>`; });
+  document.getElementById("deciles").innerHTML = o; })();
+
+const r = d.r, c = r.checks;
+document.getElementById("rcheck").innerHTML = `<thead><tr><th>Check</th><th class="num">Python</th><th class="num">R</th><th></th></tr></thead><tbody>
+  <tr><td>Holdout AUC</td><td class="num">${r.auc_python.toFixed(4)}</td><td class="num">${r.auc_r.toFixed(4)}</td><td class="ok">${c.auc_match ? "✓" : "✗"}</td></tr>
+  <tr><td>Holdout KS</td><td class="num">${r.ks_python.toFixed(4)}</td><td class="num">${r.ks_r.toFixed(4)}</td><td class="ok">${c.ks_match ? "✓" : "✗"}</td></tr>
+  <tr><td>Largest coefficient difference</td><td class="num" colspan="2">${r.max_coefficient_difference.toExponential(1)}</td><td class="ok">${c.coefficients_match ? "✓" : "✗"}</td></tr>
+  <tr><td>Every coefficient significant</td><td class="num" colspan="2">smallest |z| = ${r.min_abs_z.toFixed(2)}</td><td class="ok">${c.all_coefficients_significant ? "✓" : "✗"}</td></tr>
+  <tr><td>Every sign in the expected direction</td><td class="num" colspan="2">all negative</td><td class="ok">${c.all_signs_negative ? "✓" : "✗"}</td></tr></tbody>`;
+
+(() => { const W = 900, H = 200, Lp = 170, R = 120, rowH = 52, max = Math.max(...d.stress.map(s => s.loss_rate)) * 1.1;
+  let o = ""; d.stress.forEach((s, i) => { const yy = 16 + i * rowH, w = (W - Lp - R) * s.loss_rate / max;
+    o += `<text x="0" y="${yy + 16}" style="fill:var(--ink);font-weight:600;font-size:14px">${esc(s.scenario)}</text><text class="axis" x="0" y="${yy + 32}">LGD ${pct(s.lgd, 0)} · CCF ${pct(s.ccf, 0)}</text>
+      <rect x="${Lp}" y="${yy}" width="${w}" height="28" rx="3" fill="${["var(--navy)", "var(--mid)", "var(--bad)"][i]}"/>
+      <text x="${Lp + w + 8}" y="${yy + 19}" style="fill:var(--ink);font-weight:700;font-size:14px">${pct(s.loss_rate, 2)} · ${nt(s.expected_loss)}</text>`; });
+  document.getElementById("stress").innerHTML = o; })();
+
+document.getElementById("segs").innerHTML = d.segments.map(s => `<div class="card"><span class="soft">${esc(s.segment)} · ${pct(s.share, 0)} of accounts</span><b>${pct(s.default_rate)}</b><span class="soft">miss a payment · mean score ${Math.round(s.mean_score)} · ${pct(s.share_of_loss, 0)} of expected loss</span></div>`).join("");
+const f = d.fairness;
+document.getElementById("fair").textContent = `Sex isn't a model input, but outcomes still get checked. At the ${d.cutoff} cutoff, ${pct(f.eligible.Female, 0)} of women and ${pct(f.eligible.Male, 0)} of men qualify. The adverse impact ratio is ${f.air.toFixed(2)}, above the 0.80 four-fifths guideline. Marital status and age are excluded as prohibited or sensitive bases.`;
+const ch = d.challenger;
+document.getElementById("challenger").textContent = `A gradient-boosted challenger scored ${ch.holdout_auc.toFixed(3)} AUC, ${ch.auc_given_up.toFixed(3)} better. The scorecard shipped anyway: every point is explainable to a customer, which adverse-action notices require, and the gap is modest.`;
+document.getElementById("quality").innerHTML = d.quality.filter(q => q.count && !q.check.startsWith("Rows")).map(q => `<details><summary>${esc(q.check)} <span class="soft">(${q.count.toLocaleString()})</span></summary><p class="soft" style="margin:8px 0 0">${esc(q.treatment)}</p></details>`).join("");
+</script>
+</body>
+</html>
