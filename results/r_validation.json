@@ -1,0 +1,1 @@
+{"max_coefficient_difference": 3.522e-08, "auc_r": 0.751176, "auc_python": 0.751176, "ks_r": 0.413259, "ks_python": 0.413259, "min_abs_z": 2.03, "checks": {"coefficients_match": true, "auc_match": true, "ks_match": true, "all_coefficients_significant": true, "all_signs_negative": true}}

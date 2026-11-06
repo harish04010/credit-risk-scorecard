@@ -1,0 +1,4 @@
+scenario,story,mean_pd,mean_charge_off_probability,lgd,ccf,ead,expected_loss,loss_rate
+Baseline,Today's predicted default rates.,0.21591576171241794,0.011321090379837858,0.75,0.5,3293813886.5,22417495.18224907,0.006805938633669996
+Adverse,A downturn severe enough to happen about once a decade.,0.2818130557622806,0.014776276864643424,0.8,0.6,3645100412.4,35159688.05147349,0.009645739231727698
+Severely adverse,"About a 1-in-100-year shock: unemployment spikes, recoveries fall, customers draw down lines.",0.34639108363362603,0.01816229039271993,0.85,0.7,3996386938.3,51401980.26009337,0.01286211296695884

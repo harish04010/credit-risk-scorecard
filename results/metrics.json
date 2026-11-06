@@ -1,0 +1,915 @@
+{
+ "data": {
+  "accounts": 30000,
+  "default_rate": 0.2212,
+  "dev": 17420,
+  "val": 5807,
+  "holdout": 5807,
+  "quality": [
+   {
+    "check": "Rows and unique IDs",
+    "count": 30000,
+    "of": 30000,
+    "treatment": "One row per account, no duplicates."
+   },
+   {
+    "check": "EDUCATION codes 0, 5, 6 (dictionary defines only 1 to 4)",
+    "count": 345,
+    "of": 30000,
+    "treatment": "Grouped with 4 (other). Education isn't a scorecard input, so this only affects reporting."
+   },
+   {
+    "check": "MARRIAGE code 0 (undefined)",
+    "count": 54,
+    "of": 30000,
+    "treatment": "Kept as unknown. Marital status is a prohibited basis under ECOA and is excluded from the model."
+   },
+   {
+    "check": "Repayment status -2 or 0 (not in the documentation)",
+    "count": 25939,
+    "of": 30000,
+    "treatment": "Read as -2 = no balance to pay, -1 = paid in full, 0 = revolving (minimum paid). These are ordered and binned, not treated as delinquency."
+   },
+   {
+    "check": "Accounts with a negative bill in any month (credit balance)",
+    "count": 1930,
+    "of": 30000,
+    "treatment": "Kept. Utilization is floored at zero."
+   },
+   {
+    "check": "Accounts over their credit limit in September",
+    "count": 2115,
+    "of": 30000,
+    "treatment": "Kept. Utilization is capped at 150% so a few extreme values don't drive bins."
+   },
+   {
+    "check": "Missing values",
+    "count": 0,
+    "of": 750000,
+    "treatment": "None found."
+   },
+   {
+    "check": "Accounts with no balance in any of the six months, yet labeled as defaulting",
+    "count": 347,
+    "of": 966,
+    "treatment": "These 966 inactive accounts default at 36%, above the book's average, which is implausible for accounts that owe nothing. They're excluded from development as indeterminate, the usual practice for behavior scorecards, and flagged for the data owner."
+   }
+  ]
+ },
+ "scaling": {
+  "base_score": 600,
+  "base_odds": 50,
+  "pdo": 20
+ },
+ "binning": {
+  "limit": {
+   "iv": 0.213,
+   "bins": [
+    {
+     "bin": "<= 20000",
+     "accounts": 1481,
+     "defaults": 535,
+     "default_rate": 0.3612424037812289,
+     "woe": -0.7153126545289468
+    },
+    {
+     "bin": "20000 to 30000",
+     "accounts": 966,
+     "defaults": 339,
+     "default_rate": 0.35093167701863354,
+     "woe": -0.6706130112833327
+    },
+    {
+     "bin": "30000 to 70000",
+     "accounts": 3042,
+     "defaults": 832,
+     "default_rate": 0.27350427350427353,
+     "woe": -0.30834194387882186
+    },
+    {
+     "bin": "70000 to 100000",
+     "accounts": 1894,
+     "defaults": 466,
+     "default_rate": 0.24604012671594508,
+     "woe": -0.16576053390709167
+    },
+    {
+     "bin": "100000 to 140000",
+     "accounts": 1634,
+     "defaults": 378,
+     "default_rate": 0.23133414932680538,
+     "woe": -0.08501345118437748
+    },
+    {
+     "bin": "140000 to 240000",
+     "accounts": 4343,
+     "defaults": 703,
+     "default_rate": 0.16186967533962698,
+     "woe": 0.35892570198980106
+    },
+    {
+     "bin": "240000 to 300000",
+     "accounts": 1465,
+     "defaults": 220,
+     "default_rate": 0.15017064846416384,
+     "woe": 0.44651190452481354
+    },
+    {
+     "bin": "> 300000",
+     "accounts": 2595,
+     "defaults": 300,
+     "default_rate": 0.11560693641618497,
+     "woe": 0.7483754744234936
+    }
+   ]
+  },
+  "utilization": {
+   "iv": 0.0774,
+   "bins": [
+    {
+     "bin": "<= 0.163755",
+     "accounts": 6968,
+     "defaults": 1181,
+     "default_rate": 0.16948909299655568,
+     "woe": 0.3039371055421573
+    },
+    {
+     "bin": "0.163755 to 0.254617",
+     "accounts": 871,
+     "defaults": 148,
+     "default_rate": 0.16991963260619977,
+     "woe": 0.29853709160341435
+    },
+    {
+     "bin": "0.254617 to 0.355883",
+     "accounts": 871,
+     "defaults": 179,
+     "default_rate": 0.20551090700344432,
+     "woe": 0.06515453390779016
+    },
+    {
+     "bin": "0.355883 to 0.457726",
+     "accounts": 871,
+     "defaults": 189,
+     "default_rate": 0.21699196326061998,
+     "woe": -0.003604993688736095
+    },
+    {
+     "bin": "0.457726 to 0.759716",
+     "accounts": 2613,
+     "defaults": 653,
+     "default_rate": 0.24990432453119021,
+     "woe": -0.1863662075572601
+    },
+    {
+     "bin": "0.759716 to 1.01425",
+     "accounts": 4355,
+     "defaults": 1142,
+     "default_rate": 0.26222732491389206,
+     "woe": -0.25083665418238865
+    },
+    {
+     "bin": "> 1.01425",
+     "accounts": 871,
+     "defaults": 281,
+     "default_rate": 0.32261768082663606,
+     "woe": -0.5441413081676978
+    }
+   ]
+  },
+  "avg_utilization_6m": {
+   "iv": 0.1187,
+   "bins": [
+    {
+     "bin": "<= 0.234151",
+     "accounts": 7839,
+     "defaults": 1290,
+     "default_rate": 0.16456180635285114,
+     "woe": 0.339476235388514
+    },
+    {
+     "bin": "0.234151 to 0.319245",
+     "accounts": 871,
+     "defaults": 150,
+     "default_rate": 0.17221584385763491,
+     "woe": 0.28248655873447437
+    },
+    {
+     "bin": "0.319245 to 0.397494",
+     "accounts": 871,
+     "defaults": 181,
+     "default_rate": 0.20780711825487944,
+     "woe": 0.05127758385392045
+    },
+    {
+     "bin": "0.397494 to 0.476368",
+     "accounts": 871,
+     "defaults": 194,
+     "default_rate": 0.2227324913892078,
+     "woe": -0.03690534559516594
+    },
+    {
+     "bin": "0.476368 to 0.553132",
+     "accounts": 871,
+     "defaults": 206,
+     "default_rate": 0.2365097588978186,
+     "woe": -0.11464450985644203
+    },
+    {
+     "bin": "0.553132 to 0.76828",
+     "accounts": 2613,
+     "defaults": 650,
+     "default_rate": 0.24875621890547264,
+     "woe": -0.1801401592250166
+    },
+    {
+     "bin": "0.76828 to 0.832628",
+     "accounts": 871,
+     "defaults": 248,
+     "default_rate": 0.2847301951779564,
+     "woe": -0.3649768157071132
+    },
+    {
+     "bin": "> 0.832628",
+     "accounts": 2613,
+     "defaults": 854,
+     "default_rate": 0.32682740145426714,
+     "woe": -0.5626142810845267
+    }
+   ]
+  },
+  "utilization_trend": {
+   "iv": 0.0637,
+   "bins": [
+    {
+     "bin": "<= -0.0523667",
+     "accounts": 3485,
+     "defaults": 1016,
+     "default_rate": 0.29153515064562413,
+     "woe": -0.3975197197498212
+    },
+    {
+     "bin": "-0.0523667 to -0.0157122",
+     "accounts": 1741,
+     "defaults": 445,
+     "default_rate": 0.2556002297530155,
+     "woe": -0.21694370859424425
+    },
+    {
+     "bin": "-0.0157122 to 0",
+     "accounts": 2187,
+     "defaults": 477,
+     "default_rate": 0.21810699588477367,
+     "woe": -0.009193222165224875
+    },
+    {
+     "bin": "0 to 0.00926708",
+     "accounts": 1297,
+     "defaults": 248,
+     "default_rate": 0.19121048573631458,
+     "woe": 0.15545622706190496
+    },
+    {
+     "bin": "> 0.00926708",
+     "accounts": 8710,
+     "defaults": 1587,
+     "default_rate": 0.18220436280137772,
+     "woe": 0.21606865922834023
+    }
+   ]
+  },
+  "status_now": {
+   "iv": 0.879,
+   "bins": [
+    {
+     "bin": "<= -2",
+     "accounts": 1445,
+     "defaults": 153,
+     "default_rate": 0.10588235294117647,
+     "woe": 0.8453671631822619
+    },
+    {
+     "bin": "-2 to 0",
+     "accounts": 12236,
+     "defaults": 1711,
+     "default_rate": 0.13983327884929717,
+     "woe": 0.5311648292171427
+    },
+    {
+     "bin": "0 to 1",
+     "accounts": 1891,
+     "defaults": 632,
+     "default_rate": 0.33421470121628766,
+     "woe": -0.5964760009820808
+    },
+    {
+     "bin": "> 1",
+     "accounts": 1848,
+     "defaults": 1277,
+     "default_rate": 0.691017316017316,
+     "woe": -2.0896617150160646
+    }
+   ]
+  },
+  "status_last_month": {
+   "iv": 0.5927,
+   "bins": [
+    {
+     "bin": "<= -2",
+     "accounts": 1713,
+     "defaults": 216,
+     "default_rate": 0.12609457092819615,
+     "woe": 0.6486959063739894
+    },
+    {
+     "bin": "-2 to -1",
+     "accounts": 3543,
+     "defaults": 556,
+     "default_rate": 0.15692915608241603,
+     "woe": 0.39525914935109635
+    },
+    {
+     "bin": "-1 to 0",
+     "accounts": 9452,
+     "defaults": 1503,
+     "default_rate": 0.15901396529834955,
+     "woe": 0.38004743398710955
+    },
+    {
+     "bin": "> 0",
+     "accounts": 2712,
+     "defaults": 1498,
+     "default_rate": 0.5523598820058997,
+     "woe": -1.4953980144875612
+    }
+   ]
+  },
+  "worst_status_6m": {
+   "iv": 0.7279,
+   "bins": [
+    {
+     "bin": "<= -2",
+     "accounts": 1053,
+     "defaults": 104,
+     "default_rate": 0.09876543209876543,
+     "woe": 0.9213867569622993
+    },
+    {
+     "bin": "-2 to 0",
+     "accounts": 10619,
+     "defaults": 1211,
+     "default_rate": 0.11404087013843112,
+     "woe": 0.7643925728429432
+    },
+    {
+     "bin": "> 0",
+     "accounts": 5748,
+     "defaults": 2458,
+     "default_rate": 0.4276270006958942,
+     "woe": -0.993873580840996
+    }
+   ]
+  },
+  "months_delinquent_6m": {
+   "iv": 0.8978,
+   "bins": [
+    {
+     "bin": "<= 0",
+     "accounts": 11672,
+     "defaults": 1315,
+     "default_rate": 0.11266278272789582,
+     "woe": 0.7783240068091103
+    },
+    {
+     "bin": "0 to 1",
+     "accounts": 2309,
+     "defaults": 640,
+     "default_rate": 0.2771762667821568,
+     "woe": -0.3271397286151789
+    },
+    {
+     "bin": "1 to 2",
+     "accounts": 1152,
+     "defaults": 459,
+     "default_rate": 0.3984375,
+     "woe": -0.8735577687029549
+    },
+    {
+     "bin": "2 to 4",
+     "accounts": 1257,
+     "defaults": 677,
+     "default_rate": 0.5385839299920445,
+     "woe": -1.4396898182780091
+    },
+    {
+     "bin": "> 4",
+     "accounts": 1030,
+     "defaults": 682,
+     "default_rate": 0.6621359223300971,
+     "woe": -1.9572943635206355
+    }
+   ]
+  },
+  "payment_ratio": {
+   "iv": 0.2727,
+   "bins": [
+    {
+     "bin": "<= 0",
+     "accounts": 1344,
+     "defaults": 706,
+     "default_rate": 0.5252976190476191,
+     "woe": -1.3862757999997026
+    },
+    {
+     "bin": "0 to 0.0368255",
+     "accounts": 1269,
+     "defaults": 289,
+     "default_rate": 0.22773837667454688,
+     "woe": -0.06516692472436346
+    },
+    {
+     "bin": "0.0368255 to 0.181922",
+     "accounts": 7839,
+     "defaults": 1692,
+     "default_rate": 0.2158438576349024,
+     "woe": 0.004764495956203056
+    },
+    {
+     "bin": "0.181922 to 0.345338",
+     "accounts": 871,
+     "defaults": 175,
+     "default_rate": 0.20091848450057406,
+     "woe": 0.09335447696622534
+    },
+    {
+     "bin": "0.345338 to 1",
+     "accounts": 4471,
+     "defaults": 739,
+     "default_rate": 0.1652874077387609,
+     "woe": 0.33378497391477663
+    },
+    {
+     "bin": "> 1",
+     "accounts": 1626,
+     "defaults": 172,
+     "default_rate": 0.1057810578105781,
+     "woe": 0.8469459681161274
+    }
+   ]
+  },
+  "avg_payment_ratio_5m": {
+   "iv": 0.1948,
+   "bins": [
+    {
+     "bin": "<= 0.0349465",
+     "accounts": 871,
+     "defaults": 411,
+     "default_rate": 0.4718714121699196,
+     "woe": -1.1724746606471326
+    },
+    {
+     "bin": "0.0349465 to 0.0380688",
+     "accounts": 871,
+     "defaults": 231,
+     "default_rate": 0.26521239954075776,
+     "woe": -0.2673092484148695
+    },
+    {
+     "bin": "0.0380688 to 0.0972573",
+     "accounts": 6097,
+     "defaults": 1555,
+     "default_rate": 0.2550434639986879,
+     "woe": -0.21329801229273526
+    },
+    {
+     "bin": "0.0972573 to 0.152728",
+     "accounts": 871,
+     "defaults": 175,
+     "default_rate": 0.20091848450057406,
+     "woe": 0.09345025408857027
+    },
+    {
+     "bin": "0.152728 to 0.806758",
+     "accounts": 4355,
+     "defaults": 801,
+     "default_rate": 0.18392652123995407,
+     "woe": 0.2045062170945602
+    },
+    {
+     "bin": "0.806758 to 1",
+     "accounts": 2657,
+     "defaults": 424,
+     "default_rate": 0.15957847196085811,
+     "woe": 0.3754346388154015
+    },
+    {
+     "bin": "> 1",
+     "accounts": 1698,
+     "defaults": 176,
+     "default_rate": 0.10365135453474676,
+     "woe": 0.8698096269853309
+    }
+   ]
+  },
+  "months_paid_nothing_5m": {
+   "iv": 0.4737,
+   "bins": [
+    {
+     "bin": "<= 0",
+     "accounts": 12916,
+     "defaults": 1895,
+     "default_rate": 0.14671724992257665,
+     "woe": 0.47500355275482753
+    },
+    {
+     "bin": "0 to 1",
+     "accounts": 2986,
+     "defaults": 1073,
+     "default_rate": 0.35934360348292027,
+     "woe": -0.7073520143382545
+    },
+    {
+     "bin": "> 1",
+     "accounts": 1518,
+     "defaults": 805,
+     "default_rate": 0.5303030303030303,
+     "woe": -1.4066424675853137
+    }
+   ]
+  }
+ },
+ "selection": [
+  {
+   "feature": "months_delinquent_6m",
+   "decision": "kept",
+   "why": "IV 0.898"
+  },
+  {
+   "feature": "status_now",
+   "decision": "dropped",
+   "why": "correlation 0.75 with months_delinquent_6m, which has higher IV"
+  },
+  {
+   "feature": "worst_status_6m",
+   "decision": "dropped",
+   "why": "correlation 0.92 with months_delinquent_6m, which has higher IV"
+  },
+  {
+   "feature": "status_last_month",
+   "decision": "dropped",
+   "why": "correlation 0.78 with months_delinquent_6m, which has higher IV"
+  },
+  {
+   "feature": "months_paid_nothing_5m",
+   "decision": "dropped",
+   "why": "correlation 0.73 with months_delinquent_6m, which has higher IV"
+  },
+  {
+   "feature": "payment_ratio",
+   "decision": "kept",
+   "why": "IV 0.273"
+  },
+  {
+   "feature": "limit",
+   "decision": "kept",
+   "why": "IV 0.213"
+  },
+  {
+   "feature": "avg_payment_ratio_5m",
+   "decision": "kept",
+   "why": "IV 0.195"
+  },
+  {
+   "feature": "avg_utilization_6m",
+   "decision": "kept",
+   "why": "IV 0.119"
+  },
+  {
+   "feature": "utilization",
+   "decision": "dropped",
+   "why": "correlation 0.86 with avg_utilization_6m, which has higher IV"
+  },
+  {
+   "feature": "utilization_trend",
+   "decision": "kept",
+   "why": "IV 0.064"
+  },
+  {
+   "feature": "utilization_trend",
+   "decision": "dropped",
+   "why": "coefficient had the wrong sign once others were in"
+  },
+  {
+   "feature": "avg_payment_ratio_5m",
+   "decision": "dropped",
+   "why": "not statistically significant once others were in (|z| = 0.94)"
+  }
+ ],
+ "features": [
+  "months_delinquent_6m",
+  "payment_ratio",
+  "limit",
+  "avg_utilization_6m"
+ ],
+ "coefficients": {
+  "months_delinquent_6m": -0.9074934761141097,
+  "payment_ratio": -0.08415581283829476,
+  "limit": -0.4263615182745344,
+  "avg_utilization_6m": -0.17388158154004485
+ },
+ "intercept": -1.2813414285537135,
+ "performance": {
+  "development": {
+   "accounts": 17420,
+   "default_rate": 0.21659012629161883,
+   "auc": 0.7550660436268846,
+   "gini": 0.5101320872537691,
+   "ks": 0.4159551662434108
+  },
+  "validation": {
+   "accounts": 5807,
+   "default_rate": 0.21663509557430688,
+   "auc": 0.754367388349647,
+   "gini": 0.508734776699294,
+   "ks": 0.4264963630435033
+  },
+  "holdout": {
+   "accounts": 5807,
+   "default_rate": 0.21663509557430688,
+   "auc": 0.7511755933710338,
+   "gini": 0.5023511867420676,
+   "ks": 0.41325947001402497
+  }
+ },
+ "holdout_deciles": [
+  {
+   "decile": 1,
+   "min_score": 458.0,
+   "max_score": 483.0,
+   "accounts": 581,
+   "default_rate": 0.6316695352839932,
+   "predicted": 0.6245613849423283
+  },
+  {
+   "decile": 2,
+   "min_score": 483.0,
+   "max_score": 507.0,
+   "accounts": 581,
+   "default_rate": 0.40619621342512907,
+   "predicted": 0.42650883993408806
+  },
+  {
+   "decile": 3,
+   "min_score": 507.0,
+   "max_score": 523.0,
+   "accounts": 580,
+   "default_rate": 0.3137931034482759,
+   "predicted": 0.27959934178704243
+  },
+  {
+   "decile": 4,
+   "min_score": 523.0,
+   "max_score": 538.0,
+   "accounts": 581,
+   "default_rate": 0.17900172117039587,
+   "predicted": 0.17096019393557266
+  },
+  {
+   "decile": 5,
+   "min_score": 538.0,
+   "max_score": 541.0,
+   "accounts": 581,
+   "default_rate": 0.11703958691910499,
+   "predicted": 0.13935474679995363
+  },
+  {
+   "decile": 6,
+   "min_score": 541.0,
+   "max_score": 545.0,
+   "accounts": 580,
+   "default_rate": 0.11724137931034483,
+   "predicted": 0.12533960857562712
+  },
+  {
+   "decile": 7,
+   "min_score": 545.0,
+   "max_score": 550.0,
+   "accounts": 581,
+   "default_rate": 0.12048192771084337,
+   "predicted": 0.11179557440637194
+  },
+  {
+   "decile": 8,
+   "min_score": 550.0,
+   "max_score": 551.0,
+   "accounts": 580,
+   "default_rate": 0.12413793103448276,
+   "predicted": 0.0995393926931955
+  },
+  {
+   "decile": 9,
+   "min_score": 551.0,
+   "max_score": 554.0,
+   "accounts": 581,
+   "default_rate": 0.08950086058519793,
+   "predicted": 0.09406450638905448
+  },
+  {
+   "decile": 10,
+   "min_score": 554.0,
+   "max_score": 557.0,
+   "accounts": 581,
+   "default_rate": 0.06712564543889846,
+   "predicted": 0.08437373072447377
+  }
+ ],
+ "rank_ordered": true,
+ "reversals": [
+  {
+   "deciles": [
+    5,
+    6
+   ],
+   "gap": 0.0002017923912398384,
+   "z": 0.01069034134912023,
+   "significant": false
+  },
+  {
+   "deciles": [
+    6,
+    7
+   ],
+   "gap": 0.003240548400498547,
+   "z": 0.1705922609624551,
+   "significant": false
+  },
+  {
+   "deciles": [
+    7,
+    8
+   ],
+   "gap": 0.003656003323639384,
+   "z": 0.19010497856025005,
+   "significant": false
+  }
+ ],
+ "excluded_inactive": {
+  "accounts": 966,
+  "default_rate": 0.35921325051759834
+ },
+ "hosmer_lemeshow": {
+  "chi2": 12.895417556437051,
+  "df": 8,
+  "p_value": 0.11549898069793951
+ },
+ "calibration": {
+  "mean_pd_holdout": 0.21563424568383027,
+  "default_rate_holdout": 0.21663509557430688
+ },
+ "psi_dev_vs_holdout": 0.001882586607777886,
+ "challenger": {
+  "model": "HistGradientBoosting",
+  "holdout_auc": 0.7841317873807239,
+  "auc_given_up": 0.032956194009690076
+ },
+ "fairness": {
+  "decision": "eligible for a credit line increase if score >= 538 (top 60% of the development sample)",
+  "eligible_share": {
+   "Female": 0.6353512278697887,
+   "Male": 0.5778741865509761
+  },
+  "adverse_impact_ratio": 0.9095350118209071,
+  "lower_group": "Male",
+  "default_rate_by_band_and_sex": {
+   "0": {
+    "Female": 0.6523076923076923,
+    "Male": 0.6055776892430279
+   },
+   "1": {
+    "Female": 0.39171974522292996,
+    "Male": 0.43346007604562736
+   },
+   "2": {
+    "Female": 0.28763440860215056,
+    "Male": 0.3476190476190476
+   },
+   "3": {
+    "Female": 0.18269230769230768,
+    "Male": 0.1853146853146853
+   },
+   "4": {
+    "Female": 0.10955056179775281,
+    "Male": 0.12109375
+   },
+   "5": {
+    "Female": 0.10643564356435643,
+    "Male": 0.13452914798206278
+   },
+   "6": {
+    "Female": 0.11974110032362459,
+    "Male": 0.13333333333333333
+   },
+   "7": {
+    "Female": 0.11832946635730858,
+    "Male": 0.140625
+   },
+   "8": {
+    "Female": 0.08498583569405099,
+    "Male": 0.07373271889400922
+   },
+   "9": {
+    "Female": 0.0705521472392638,
+    "Male": 0.07048458149779736
+   }
+  },
+  "mean_gap_within_band": -0.012182112112815323
+ },
+ "stress": [
+  {
+   "scenario": "Baseline",
+   "story": "Today's predicted default rates.",
+   "mean_pd": 0.21591576171241794,
+   "mean_charge_off_probability": 0.011321090379837858,
+   "lgd": 0.75,
+   "ccf": 0.5,
+   "ead": 3293813886.5,
+   "expected_loss": 22417495.18224907,
+   "loss_rate": 0.006805938633669996
+  },
+  {
+   "scenario": "Adverse",
+   "story": "A downturn severe enough to happen about once a decade.",
+   "mean_pd": 0.2818130557622806,
+   "mean_charge_off_probability": 0.014776276864643424,
+   "lgd": 0.8,
+   "ccf": 0.6,
+   "ead": 3645100412.4,
+   "expected_loss": 35159688.05147349,
+   "loss_rate": 0.009645739231727698
+  },
+  {
+   "scenario": "Severely adverse",
+   "story": "About a 1-in-100-year shock: unemployment spikes, recoveries fall, customers draw down lines.",
+   "mean_pd": 0.34639108363362603,
+   "mean_charge_off_probability": 0.01816229039271993,
+   "lgd": 0.85,
+   "ccf": 0.7,
+   "ead": 3996386938.3,
+   "expected_loss": 51401980.26009337,
+   "loss_rate": 0.01286211296695884
+  }
+ ],
+ "missed_payment_to_charge_off": 0.052432903879044354,
+ "el_missed_payment_basis": 427546321.5610413,
+ "roll_rate_el_12m": 31655495.152066667,
+ "segments": [
+  {
+   "segment": "Steady revolvers",
+   "accounts": 13511,
+   "share": 0.4503666666666667,
+   "avg_utilization_6m": 0.5927629228626845,
+   "avg_payment_ratio_5m": 0.11264210391408656,
+   "months_delinquent_6m": 0.29501887351047296,
+   "limit": 138047.78920879285,
+   "default_rate": 0.16719709866035082,
+   "mean_score": 535.127673747317,
+   "expected_loss": 8991673.24664834,
+   "share_of_loss": 0.4011007105632502
+  },
+  {
+   "segment": "Behind on payments",
+   "accounts": 3925,
+   "share": 0.13083333333333333,
+   "avg_utilization_6m": 0.6327482764721093,
+   "avg_payment_ratio_5m": 0.08760755969285468,
+   "months_delinquent_6m": 4.3238216560509555,
+   "limit": 82997.70700636943,
+   "default_rate": 0.5928662420382166,
+   "mean_score": 476.11617834394906,
+   "expected_loss": 5853085.666003108,
+   "share_of_loss": 0.26109454327608284
+  },
+  {
+   "segment": "Pays in full",
+   "accounts": 12564,
+   "share": 0.4188,
+   "avg_utilization_6m": 0.05257458658295841,
+   "avg_payment_ratio_5m": 0.8455939774857477,
+   "months_delinquent_6m": 0.32386182744348935,
+   "limit": 225533.26965934417,
+   "default_rate": 0.16316459726201846,
+   "mean_score": 542.0049347341611,
+   "expected_loss": 7572736.269597618,
+   "share_of_loss": 0.3378047461606668
+  }
+ ],
+ "segmentation": {
+  "silhouette_by_k": {
+   "3": 0.4215631137474621,
+   "4": 0.3858140437975062,
+   "5": 0.3775476050076312,
+   "6": 0.36798870373140774
+  },
+  "k": 3
+ }
+}
